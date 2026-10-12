@@ -1,3 +1,4 @@
+
 local function charAt(string, index)
     return string.sub(string, index, index)
 end
@@ -41,7 +42,7 @@ while pc <= #program do
         
     elseif charAt(program, pc) == "/" then
     
-        memory[pointer] = memory[pointer] // 2
+        memory[pointer] = memory[pointer] / 2
         
     elseif charAt(program, pc) == "0" then    
     
@@ -54,26 +55,49 @@ while pc <= #program do
     elseif charAt(program, pc) == "<" then
     
         pointer = pointer - 1
-        
+		
     elseif charAt(program, pc) == "." then
     
         io.write( string.char( memory[pointer] ) ) -- io.write does NOT append \n like print does
+		
+	elseif charAt(program, pc) == "_" then
+	
+	    print() -- newline
         
     elseif charAt(program, pc) == "#" then    
     
         io.write( memory[pointer] )
-        
-    elseif charAt(program, pc) == "C" then
-        
-        clipboard = memory[pointer]
-        
-    elseif charAt(program, pc) == "V" then
-    
-        memory[pointer] = clipboard
-        
-    elseif charAt(program, pc) == "X" then
-    
-        clipboard = 0
+        		
+	elseif charAt(program, pc) == "$" then -- special command! the next character will be skipped and instead be overridden by $C's custom definition of C
+	
+	    if      charAt(program, pc+1) == "+" then
+		
+		    clipboard = memory[pointer] + clipboard
+			
+		elseif charAt(program, pc+1) == "-" then
+		
+		    clipboard = memory[pointer] - clipboard
+			
+	    elseif charAt(program, pc+1) == "*" then
+		
+		    clipboard = memory[pointer] * clipboard
+			
+		elseif charAt(program, pc+1) == "/" then
+		
+		    clipboard = memory[pointer] / clipboard
+			
+		elseif charAt(program, pc+1) == "C" then
+		
+		    clipboard = memory[pointer]
+			
+		elseif charAt(program, pc+1) == "V" then
+		
+		    memory[pointer] = clipboard
+		
+		end
+	
+	    pc = pc + 2
+	    jumped = true
         
     elseif charAt(program, pc) == '"' then -- spread a string as ASCII across mem[p] and beyond, jump to after end quote
     
@@ -141,7 +165,7 @@ while pc <= #program do
         
         end    
     
-    elseif charAt(program, pc) == "@" then -- unconditional jump ...
+    elseif charAt(program, pc) == "@" then -- unconditional jump ... PLEASE do not put ], [, ), or ( inside comments!!!
          
         jumpDepth = 1 -- we're already inside a jump!
          
