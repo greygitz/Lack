@@ -93,7 +93,11 @@ while pc <= #program do
 		elseif charAt(program, pc+1) == "V" then
 		
 		    memory[pointer] = clipboard
-		
+
+		elseif charAt(program, pc+1) == "X" then
+
+			clipboard = 0
+			
 		end
 	
 	    pc = pc + 2
