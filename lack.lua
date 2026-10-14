@@ -72,7 +72,7 @@ end
 
 while pc <= #program do
 
-    print("executing " .. charAt(program, pc) .. "; pc is " .. pc .. "; mem["..pointer.."] is now " .. memory[pointer])
+    --print("executing " .. charAt(program, pc) .. "; pc is " .. pc .. "; mem["..pointer.."] is now " .. memory[pointer])
 
     jumped = false
     
