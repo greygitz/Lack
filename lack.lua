@@ -1,13 +1,66 @@
+local function trimPattern(string, pattern)
+    return string.gsub(string, pattern, "")
+end
 
 local function charAt(string, index)
     return string.sub(string, index, index)
 end
 
-local program = [[]] -- put your program here !!
+-- find next instance of SUBSTRING in STRING starting from INDEX; return index of found instance
+local function nextInstance(string, substring, index)
+    local start, stop = string.find(string, substring, index)
+    return start
+end
+
+local function findEof(string, substring, index) -- sugar
+    local start, stop = string.find(string, substring, index)
+    return stop
+end
+
+local function nextInstance_string(string, substring, index) -- sugar
+    local start = nextInstance(string, substring, index)
+	local stop = findEof(string, substring, index)
+	
+	return string.sub(string, start, stop)
+end
+
+-- returns substring of STRING starting with SUB1 and ending with SUB2 starting from INDEX
+local function nextStringWithinEX(string, sub1, sub2, index)
+    local pattern = sub1 .. "(.-)" .. sub2
+    return string.match(string, pattern, index)
+end
+	
+-- terrifyingly unoptimized function to return string from index up until the end
+local function untilEnd(string, index)
+    local tempString = ""
+    for i = index, #string do
+	    tempString = tempString .. charAt(string, i)
+	end
+	return tempString
+end	
+
+function injectSub(string, injectPos, insertString)
+    return string.sub(string, 1, injectPos - 1) .. insertString .. string.sub(string, injectPos + 1)
+end
+
+-- can someone fork this and move these into a library i'm lazy
+	
+	
+
+
+
+local program = [[%add4{
+                            ++++ @ add 4 to [n];
+				       }   
+				
+				%add4
+				#]] -- put your program here !!
 
 local jumped = false
 
 local memory = {}
+
+local macros = {}
 
 local pointer = 1
 
@@ -24,7 +77,7 @@ end
 
 while pc <= #program do
 
-    --print("executing " .. charAt(program, pc) .. "; pc is " .. pc .. "; mem["..pointer.."] is now " .. memory[pointer])
+    print("executing " .. charAt(program, pc) .. "; pc is " .. pc .. "; mem["..pointer.."] is now " .. memory[pointer])
 
     jumped = false
     
@@ -70,38 +123,49 @@ while pc <= #program do
         		
 	elseif charAt(program, pc) == "$" then -- special command! the next character will be skipped and instead be overridden by $C's custom definition of C
 	
+	    local picked = false
+	
 	    if      charAt(program, pc+1) == "+" then
 		
 		    clipboard = memory[pointer] + clipboard
+			picked = true
 			
 		elseif charAt(program, pc+1) == "-" then
 		
 		    clipboard = memory[pointer] - clipboard
+			picked = true
 			
 	    elseif charAt(program, pc+1) == "*" then
 		
 		    clipboard = memory[pointer] * clipboard
+			picked = true
 			
 		elseif charAt(program, pc+1) == "/" then
 		
 		    clipboard = memory[pointer] / clipboard
+			picked = true
 			
 		elseif charAt(program, pc+1) == "C" then
 		
 		    clipboard = memory[pointer]
+			picked = true
 			
 		elseif charAt(program, pc+1) == "V" then
 		
 		    memory[pointer] = clipboard
-
+			picked = true
+		
 		elseif charAt(program, pc+1) == "X" then
-
-			clipboard = 0
+		
+		    clipboard = 0
+			picked = true
 			
 		end
 	
-	    pc = pc + 2
-	    jumped = true
+	    if picked then
+			pc = pc + 2
+			jumped = true
+		end
         
     elseif charAt(program, pc) == '"' then -- spread a string as ASCII across mem[p] and beyond, jump to after end quote
     
@@ -125,6 +189,43 @@ while pc <= #program do
         pc = i + 1
         jumped = true        
         
+	elseif charAt(program, pc) == "%" then -- %NAME{DEF} // %NAME
+	
+	    local defining = false
+	
+	    local percPos = pc                                  -- sugar. Fuck you
+				
+		local bracePos = nextInstance(program, "{", pc) or #program
+	
+	    local macroName = string.sub(program, percPos + 1, bracePos - 1)
+		
+		print("DEBUG program:", type(program), program)
+		
+		local macro = nextStringWithinEX(program, "{", "}", pc)
+        if #macro == 0 then macro = false end
+
+		
+		if macro then -- definition
+		
+		    macros[macroName] = macro
+			program = trimPattern(program, "%%"..macroName) -- trim the macro and its name
+			
+		else -- call
+			
+			program = trimPattern(program, "%%"..macroName) -- we still have to remove the original macro code
+			
+			program = injectSub(program, pc, macro) -- the preprocessor is the execution loop
+			
+		end
+		
+        
+		if macro then 
+		    print("Defined macro '" .. macroName .. "' with program `" .. macro .. "` !!")
+		else
+		    print("Called macro '" .. macroName .. "' !!")
+		end
+		
+		
     elseif charAt(program, pc) == "[" and memory[pointer] == 0 then -- if memory at pointer is 0 and command is [ ...
          
         bracketDepth = 1 -- we're already inside a bracket!
