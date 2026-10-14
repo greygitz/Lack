@@ -49,12 +49,7 @@ end
 
 
 
-local program = [[%add4{
-                            ++++ @ add 4 to [n];
-				       }   
-				
-				%add4
-				#]] -- put your program here !!
+local program = [[]] -- put your program here !!
 
 local jumped = false
 
