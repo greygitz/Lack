@@ -23,5 +23,5 @@
 |`(`        |If `memory[i]` is 0, then jump forward to the command after the matching `)`                                      |
 |`)`        |Unlike `]`, does not jump back to the matching `)`. Closes the matching `(`                                       |
 |`@`        |Jump forward to the matching `;` unconditionally                                                                  |
-|`%name{macro}`|Define or replace a macro named `name` with the code `macro`                                                   |
-|`%name`    |Execute the macro named `name`                                                                                    |
+|~~`%name{macro}`~~|~~Define or replace a macro named `name` with the code `macro`~~ lacks functionality                       |
+|~~`%name`~~|~~Execute the macro named `name`~~                                                                                |
