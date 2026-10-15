@@ -1,52 +1,53 @@
-local function trimPattern(string, pattern)
-    return string.gsub(string, pattern, "")
+local function trimPattern(str, pattern)
+    return string.gsub(str, pattern, "")
 end
 
-local function charAt(string, index)
-    return string.sub(string, index, index)
+local function charAt(str, index)
+    return string.sub(str, index, index)
 end
 
 -- find next instance of SUBSTRING in STRING starting from INDEX; return index of found instance
-local function nextInstance(string, substring, index)
-    local start, stop = string.find(string, substring, index)
+local function nextInstance(str, substring, index)
+    local start, stop = string.find(str, substring, index)
     return start
 end
 
-local function findEof(string, substring, index) -- sugar
-    local start, stop = string.find(string, substring, index)
+local function findEof(str, substring, index) -- sugar
+    local start, stop = string.find(str, substring, index)
     return stop
 end
 
-local function nextInstance_string(string, substring, index) -- sugar
-    local start = nextInstance(string, substring, index)
-	local stop = findEof(string, substring, index)
+local function nextInstance_string(str, substring, index) -- sugar
+    local start = nextInstance(str, substring, index)
+	local stop = findEof(str, substring, index)
 	
-	return string.sub(string, start, stop)
+	return string.sub(str, start, stop)
 end
 
 -- returns substring of STRING starting with SUB1 and ending with SUB2 starting from INDEX
-local function nextStringWithinEX(string, sub1, sub2, index)
+local function nextStringWithinEX(str, sub1, sub2, index)
     local pattern = sub1 .. "(.-)" .. sub2
-    return string.match(string, pattern, index)
+    return string.match(str, pattern, index)
 end
 	
--- terrifyingly unoptimized function to return string from index up until the end
-local function untilEnd(string, index)
-    local tempString = ""
-    for i = index, #string do
-	    tempString = tempString .. charAt(string, i)
-	end
-	return tempString
+-- terrifyingly optimized function to return string from index up until the end
+local function untilEnd(str, index)
+    return string.sub(str, index, #str)
 end	
 
-function injectSub(string, injectPos, insertString)
-    return string.sub(string, 1, injectPos - 1) .. insertString .. string.sub(string, injectPos + 1)
+function injectSub(str, injectPos, insertString)
+    return string.sub(str, 1, injectPos - 1) .. insertString .. string.sub(str, injectPos + 1)
 end
 
--- can someone fork this and move these into a library i'm lazy
+function expect(str, substring, index)
+    local start = nextInstance(str, substring, index)
 	
-	
-
+	if start then return start 
+	else
+	    print("expect: expected '"..substring.."', got something else")
+	    return false
+	end
+end
 
 
 local program = [[]] -- put your program here !!
@@ -120,7 +121,7 @@ while pc <= #program do
 	
 	    local picked = false
 	
-	    if      charAt(program, pc+1) == "+" then
+	    if     charAt(program, pc+1) == "+" then
 		
 		    clipboard = memory[pointer] + clipboard
 			picked = true
@@ -140,17 +141,17 @@ while pc <= #program do
 		    clipboard = memory[pointer] / clipboard
 			picked = true
 			
-		elseif charAt(program, pc+1) == "C" then
+		elseif string.upper(charAt(program, pc+1)) == "C" then
 		
 		    clipboard = memory[pointer]
 			picked = true
-			
-		elseif charAt(program, pc+1) == "V" then
+		    
+		elseif string.upper(charAt(program, pc+1)) == "V" then
 		
 		    memory[pointer] = clipboard
 			picked = true
 		
-		elseif charAt(program, pc+1) == "X" then
+		elseif string.upper(charAt(program, pc+1)) == "X" then
 		
 		    clipboard = 0
 			picked = true
@@ -184,42 +185,50 @@ while pc <= #program do
         pc = i + 1
         jumped = true        
         
-	elseif charAt(program, pc) == "%" then -- %NAME{DEF} // %NAME
+	elseif charAt(program, pc) == "%" then -- %NAME{DEF}% // %NAME% (please define it right)
 	
 	    local defining = false
 	
-	    local percPos = pc                                  -- sugar. Fuck you
-				
-		local bracePos = nextInstance(program, "{", pc) or #program
-	
-	    local macroName = string.sub(program, percPos + 1, bracePos - 1)
+	    local percPos = pc
 		
-		print("DEBUG program:", type(program), program)
+		local startBrace = nextInstance(program, "{", percPos)
+		local endBrace = nextInstance(program, "}", startBrace)
 		
-		local macro = nextStringWithinEX(program, "{", "}", pc)
-        if #macro == 0 then macro = false end
-
+		local startName = percPos + 1
+		local endName = nil -- later
 		
-		if macro then -- definition
-		
-		    macros[macroName] = macro
-			program = trimPattern(program, "%%"..macroName) -- trim the macro and its name
-			
-		else -- call
-			
-			program = trimPattern(program, "%%"..macroName) -- we still have to remove the original macro code
-			
-			program = injectSub(program, pc, macro) -- the preprocessor is the execution loop
-			
-		end
-		
-        
-		if macro then 
-		    print("Defined macro '" .. macroName .. "' with program `" .. macro .. "` !!")
+        if not startBrace or not endBrace then -- not defining
+		    defining = false
+		    endName = expect(program, "%%", percPos + 1)			
 		else
-		    print("Called macro '" .. macroName .. "' !!")
+		    defining = true
+			endName = startBrace - 1
 		end
 		
+		
+		if not endName then -- not found
+		    print("macro: End of name not found @ "..pc) -- error handling in Lack is crazy
+			break
+		end
+
+		local name = string.sub(program, startName, endName)
+		
+		local macro = nil
+		if defining then macro = string.sub(program, startBrace + 1, endBrace - 1) end
+		
+		if defining then
+		    macros[name] = macro
+			pc = pc + #macro + #name + 5 -- 4 accounts for the two %s, { and } and starts the PC after the last %
+			jumped = true
+		else -- compile all called macros. why not? it's faster, right?
+		    for mcName, mcCode in pairs(macros) do
+				program = string.gsub(program, "%%"..mcName.."%%", mcCode) -- replace all occurrences of %NAME% with MACRO
+			end
+			pc = pc - 1 -- i don't know why this works just keep it
+			jumped = true
+		end
+		    
+		print(tostring(defining))
 		
     elseif charAt(program, pc) == "[" and memory[pointer] == 0 then -- if memory at pointer is 0 and command is [ ...
          
