@@ -1,18 +1,9 @@
-# Requirements
-Just download `raylua_s.exe` from [here](https://github.com/TSnake41/raylib-lua/releases/download/v4.5a/raylua-4.5a-Win64-mingw.zip) (https://github.com/TSnake41/raylib-lua/releases).
-
-```batch
-raylua_s lack.lua
-```
-
-Raylua is only supported on Windows.
-
-
 ---
 # Spec
 
 | Command | Function                                                                                                           |
 |:-------:|--------------------------------------------------------------------------------------------------------------------|
+|`,`        |Waits for 1 character of user input and sets `memory[1]` to the consumed input                                    |
 |`0`        |Resets `memory[i]` to zero                                                                                        |
 |`+`        |Adds 1 to `memory[i]`                                                                                             |
 |`$+`       |Add `memory[i]` to the accumulator, store in the accumulator                                                      |
@@ -31,7 +22,11 @@ Raylua is only supported on Windows.
 |`$C`       |Copies `memory[i]` into the accumulator                                                                           |
 |`$V`       |Pastes the value of the accumulator into `memory[i]`                                                              |
 |`$X`       |Resets the accumulator to zero                                                                                    |
+|`?-`       |Set loop condition to "if `memory[i]` is negative"                                                                |
 |`?0`       |Set loop condition to "if `memory[i]` == 0" (default loop behavior)                                               |
+|`?+`       |Set loop condition to "if `memory[i]` is positive"                                                                |
+|`?E`       |Set loop condition to "if `memory[i]` is even"                                                                    |
+|`?O`       |Set loop condition to "if `memory[i]` is odd"                                                                     |
 |`?<`       |Set loop condition to "if `memory[i]` < accumulator"                                                              |
 |`?=`       |Set loop condition to "if `memory[i]` == accumulator"                                                             |
 |`?!`       |Set loop condition to "if `memory[i]` != accumulator"                                                             |
