@@ -3,7 +3,7 @@
 
 | Command | Function                                                                                                           |
 |:-------:|--------------------------------------------------------------------------------------------------------------------|
-|`,`        |Waits for 1 character of user input and sets `memory[1]` to the consumed input                                    |
+|`,`        |Waits for 1 character of user input and sets `memory[i]` to the consumed input                                    |
 |`0`        |Resets `memory[i]` to zero                                                                                        |
 |`+`        |Adds 1 to `memory[i]`                                                                                             |
 |`$+`       |Add `memory[i]` to the accumulator, store in the accumulator                                                      |
