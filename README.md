@@ -31,6 +31,7 @@
 |`?=`       |Set loop condition to "if `memory[i]` == accumulator"                                                             |
 |`?!`       |Set loop condition to "if `memory[i]` != accumulator"                                                             |
 |`?>`       |Set loop condition to "if `memory[i]` > accumulator"                                                              |
+|`:num:`    |Read `num` as a number into `memory[i]`                                                                           |
 |`"str"`    |Writes the ASCII values of `str` into `memory[i]` and beyond (does not account for nested strings)                |
 |`[`        |If the set condition is met (or `memory[i]` is 0), then jump forward to the command after the matching `]`        |
 |`]`        |If the set condition is *not* met (or `memory[i]` is not 0), then jump back to the command after the matching `[` |
