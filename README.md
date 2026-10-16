@@ -1,3 +1,16 @@
+# Requirements
+Just download `raylua_s.exe` from [here](https://github.com/TSnake41/raylib-lua/releases/download/v4.5a/raylua-4.5a-Win64-mingw.zip) (https://github.com/TSnake41/raylib-lua/releases).
+
+```batch
+raylua_s lack.lua
+```
+
+Raylua is only supported on Windows.
+
+
+---
+# Spec
+
 | Command | Function                                                                                                           |
 |:-------:|--------------------------------------------------------------------------------------------------------------------|
 |`0`        |Resets `memory[i]` to zero                                                                                        |
