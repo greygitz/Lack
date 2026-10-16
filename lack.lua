@@ -49,6 +49,7 @@ function expect(str, substring, index)
 	end
 end
 
+local condition = "0"
 
 local program = [[]] -- put your program here !!
 
@@ -70,6 +71,40 @@ for i = 0, 2048 do
     memory[i] = 0
     --print("memory["..i.."] is now " .. memory[i])
 end
+
+function evaluate(condVar)
+
+    local picked = false
+
+    if condVar == "=" then
+	    if memory[pointer] == clipboard then return true else return false end
+	    picked = true
+		
+	elseif condVar == ">" then
+		if memory[pointer] > clipboard then return true else return false end
+	    picked = true
+		
+	elseif condVar == "<" then
+		if memory[pointer] < clipboard then return true else return false end
+		picked = true
+		
+	elseif condVar == "0" then
+		if memory[pointer] == 0 then return true else return false end
+		picked = true
+		
+	elseif condVar == "!" then
+		if memory[pointer] ~= clipboard then return true else return false end
+		picked = true
+		
+	end
+
+    if not picked then print("eval: Warning .. invalid condition picked ("..condVar.."); condition remains unchanged.") end
+
+end
+
+
+
+
 
 while pc <= #program do
 
@@ -117,6 +152,14 @@ while pc <= #program do
     
         io.write( memory[pointer] )
         		
+	elseif charAt(program, pc) == "?" then -- special command! the next character will set the condition; eval will evaluate them at conditionals
+		
+		condition = charAt(program, pc+1)
+	    --print("cmd.?: condition is now "..condition)
+		
+		pc = pc + 2
+		jumped = true				
+				
 	elseif charAt(program, pc) == "$" then -- special command! the next character will be skipped and instead be overridden by $C's custom definition of C
 	
 	    local picked = false
@@ -156,8 +199,13 @@ while pc <= #program do
 		    clipboard = 0
 			picked = true
 			
+		elseif string.upper(charAt(program, pc+1)) == "S" then
+		
+		    clipboard, memory[pointer] = memory[pointer], clipboard
+			picked = true
+		
 		end
-	
+		
 	    if picked then
 			pc = pc + 2
 			jumped = true
@@ -227,11 +275,9 @@ while pc <= #program do
 			pc = pc - 1 -- i don't know why this works just keep it
 			jumped = true
 		end
-		    
-		print(tostring(defining))
 		
-    elseif charAt(program, pc) == "[" and memory[pointer] == 0 then -- if memory at pointer is 0 and command is [ ...
-         
+    elseif charAt(program, pc) == "[" and not evaluate(condition) then -- if condition is true and command is [ ...
+		
         bracketDepth = 1 -- we're already inside a bracket!
         
         for i = pc + 1, #program do -- iterate over the program with i (don't count current bracket)       ...if the selected cell is zero, then jump forward to the matching ] command...
@@ -252,8 +298,9 @@ while pc <= #program do
             
         end
         
-    elseif charAt(program, pc) == "]" and not (memory[pointer] == 0) then -- if memory at pointer is NOT 0 and command is ] ...
-    
+    elseif charAt(program, pc) == "]" and evaluate(condition) then -- if condition is NOT true and command is ] ...
+	
+   
         bracketDepth = 1 -- we're already inside a bracket!
     
         for i = pc - 1, 1, -1 do -- iterate over the program *backwards* from the pc with i     ...if the selected cell is not zero, then jump backwards to the matching [ command...
@@ -295,8 +342,8 @@ while pc <= #program do
             end
         end
         
-    elseif charAt(program, pc) == "(" and memory[pointer] == 0 then -- IF, unlike [] which parses ] as "jump back if nonzero" ...
-         
+    elseif charAt(program, pc) == "(" and not evaluate(condition) then -- IF, unlike [] which parses ] as "jump back if condition != true" ...
+		 
         ifDepth = 1 -- we're already inside a parenthesis!
         
         for i = pc + 1, #program do -- iterate over the program with i (don't count current bracket)       ...if the selected cell is zero, then jump forward to the matching ) command...
