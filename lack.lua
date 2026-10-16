@@ -77,25 +77,48 @@ function evaluate(condVar)
     local picked = false
 
     if condVar == "=" then
-	    if memory[pointer] == clipboard then return true else return false end
 	    picked = true
+		return memory[pointer] == clipboard
 		
 	elseif condVar == ">" then
-		if memory[pointer] > clipboard then return true else return false end
 	    picked = true
+		return memory[pointer] > clipboard
 		
 	elseif condVar == "<" then
-		if memory[pointer] < clipboard then return true else return false end
 		picked = true
+		return memory[pointer] < clipboard
+		
+	elseif string.upper(condVar) == "+" then
+	    picked = true
+		return memory[pointer] > 0
 		
 	elseif condVar == "0" then
-		if memory[pointer] == 0 then return true else return false end
 		picked = true
+		return memory[pointer] == 0
+		
+	elseif string.upper(condVar) == "-" then
+	    picked = true
+		return memory[pointer] < 0
 		
 	elseif condVar == "!" then
-		if memory[pointer] ~= clipboard then return true else return false end
 		picked = true
+		return memory[pointer] ~= clipboard
 		
+	elseif string.upper(condVar) == "E" then
+	    picked = true
+		return memory[pointer] % 2 == 0
+		
+	elseif string.upper(condVar) == "O" then
+	    picked = true
+		return memory[pointer] % 2 == 1
+		
+	elseif condVar == "." then
+	    picked = true
+		return true
+	
+	elseif condVar == "?" then
+	    picked = true
+	    return math.random() < 0.5
 	end
 
     if not picked then print("eval: Warning .. invalid condition picked ("..condVar.."); condition remains unchanged.") end
@@ -131,6 +154,10 @@ while pc <= #program do
     elseif charAt(program, pc) == "0" then    
     
         memory[pointer] = 0
+		
+	elseif charAt(program, pc) == "^" then
+	
+	    pc = #program+1
         
     elseif charAt(program, pc) == ">" then
     
@@ -144,6 +171,10 @@ while pc <= #program do
     
         io.write( string.char( memory[pointer] ) ) -- io.write does NOT append \n like print does
 		
+	elseif charAt(program, pc) == "," then
+	
+	    memory[pointer] = io.read(1)
+		
 	elseif charAt(program, pc) == "_" then
 	
 	    print() -- newline
@@ -156,7 +187,6 @@ while pc <= #program do
 		
 		condition = charAt(program, pc+1)
 	    --print("cmd.?: condition is now "..condition)
-		
 		pc = pc + 2
 		jumped = true				
 				
@@ -225,6 +255,28 @@ while pc <= #program do
             end
             
             tempPointer = tempPointer + 1
+            
+            i = i + 1
+            
+        end
+        
+        pc = i + 1
+        jumped = true
+
+    elseif charAt(program, pc) == ':' then -- set mem[p] to an immediate, jump to after the ending colon
+    
+        local immediateStr = ""
+		
+        local i = pc + 1
+        
+        while i <= #program do
+            
+            if charAt(program, i) == ';' then -- we've reached the end of the string!
+			    memory[pointer] = tonumber(immediateStr)
+                break
+            else -- still consuming characters
+                immediateStr = immediateStr .. charAt(program, i) -- append char
+            end
             
             i = i + 1
             
