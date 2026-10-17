@@ -31,6 +31,8 @@
 |`?=`       |Set loop condition to "if `memory[i]` == accumulator"                                                             |
 |`?!`       |Set loop condition to "if `memory[i]` != accumulator"                                                             |
 |`?>`       |Set loop condition to "if `memory[i]` > accumulator"                                                              |
+|`??`       |Set loop condition to "if 50% chance is met"                                                                      |
+|`?.`       |Set loop condition to "always"                                                                                    |
 |`:num:`    |Read `num` as a number into `memory[i]`                                                                           |
 |`"str"`    |Writes the ASCII values of `str` into `memory[i]` and beyond, leave pointer where it was                          |
 |`[`        |If the set condition is met (or `memory[i]` is 0), then jump forward to the command after the matching `]`        |
