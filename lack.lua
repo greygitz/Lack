@@ -271,7 +271,7 @@ while pc <= #program do
         
         while i <= #program do
             
-            if charAt(program, i) == ';' then -- we've reached the end of the string!
+            if charAt(program, i) == ':' then -- we've reached the end of the string!
 			    memory[pointer] = tonumber(immediateStr)
                 break
             else -- still consuming characters
