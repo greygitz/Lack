@@ -1,3 +1,7 @@
+Note: the Lua Lack interpreter is broken
+may be fixed or rewritten in the near future
+
+
 ---
 # Spec
 
